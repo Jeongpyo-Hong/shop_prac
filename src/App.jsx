@@ -7,6 +7,7 @@ import Detail from "./pages/Detail";
 import Item from "./components/Item";
 import About from "./pages/About";
 import Event from "./pages/Event";
+import axios from "axios";
 
 function App() {
   const [shoes, setShoes] = useState(data);
@@ -35,7 +36,7 @@ function App() {
       </Navbar>
 
       <Routes>
-        <Route path="/" element={<Home shoes={shoes} />} />
+        <Route path="/" element={<Home shoes={shoes} setShoes={setShoes} />} />
         <Route path="/detail/:id" element={<Detail shoes={shoes} />} />
 
         {/* Nested Routes 작성 방식 */}
@@ -55,7 +56,10 @@ function App() {
   );
 }
 
-const Home = ({ shoes }) => {
+const Home = ({ shoes, setShoes }) => {
+  const [moreCnt, setMoreCnt] = useState(2);
+  const [loading, setLoading] = useState(false);
+
   return (
     <div>
       {/* main image */}
@@ -69,6 +73,33 @@ const Home = ({ shoes }) => {
           ))}
         </Row>
       </Container>
+
+      {/* 더보기 */}
+      <button
+        onClick={() => {
+          setLoading(true);
+          if (moreCnt == 3) {
+            alert("더 이상 가져올 항목이 없습니다.");
+            return setLoading(false);
+          }
+          axios
+            .get(`https://codingapple1.github.io/shop/data${moreCnt}.json`)
+            .then((data) => {
+              setShoes([...shoes, ...data.data]);
+              setLoading(false);
+              setMoreCnt(moreCnt + 1);
+            })
+            .catch((e) => {
+              console.error(e);
+              setLoading(false);
+            });
+        }}
+      >
+        더보기
+      </button>
+
+      {/* 로딩중 */}
+      {loading ? <div>로딩중입니다.</div> : null}
     </div>
   );
 };

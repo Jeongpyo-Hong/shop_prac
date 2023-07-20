@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 const Detail = ({ shoes }) => {
   const { id } = useParams();
-  const item = shoes.find((el) => el.id == id);
+  const item = shoes?.find((el) => el.id === +id);
 
   const [show, setShow] = useState(true);
 
@@ -30,8 +30,17 @@ const Detail = ({ shoes }) => {
     };
   }, []);
 
+  const [fade, setFade] = useState("");
+  useEffect(() => {
+    setFade("end");
+
+    return () => {
+      setFade("");
+    };
+  }, []);
+
   return (
-    <div className="container">
+    <div className={`container start ${fade}`}>
       {show ? (
         <div className="alert alert-warning">2초 이내 구매 시 할인</div>
       ) : null}
@@ -71,17 +80,34 @@ const Detail = ({ shoes }) => {
 
 // if문은 html 안에서 사용할 수 없으므로 컴포넌트로 분리하여 사용
 const Tab = ({ tab }) => {
+  // tab 누를 때 end 클래스 추가하기
+  const [fade, setFade] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFade("end");
+    }, 10);
+
+    return () => {
+      clearTimeout(timer);
+      setFade("");
+    };
+  }, [tab]);
+
   // 방법1
-  if (tab == 0) {
-    return <div>내용0</div>;
-  } else if (tab == 1) {
-    return <div>내용1</div>;
-  } else if (tab == 2) {
-    return <div>내용2</div>;
-  }
+  // if (tab == 0) {
+  //   return <div>내용0</div>;
+  // } else if (tab == 1) {
+  //   return <div>내용1</div>;
+  // } else if (tab == 2) {
+  //   return <div>내용2</div>;
+  // }
 
   // 방법2: array에서 하나씩 꺼내는 방식
-  // [<div>내용0</div>, <div>내용1</div>, <div>내용2</div>][tab]
+  return (
+    <div className={`start ${fade}`}>
+      {[<div>내용0</div>, <div>내용1</div>, <div>내용2</div>][tab]}
+    </div>
+  );
 };
 
 export default Detail;

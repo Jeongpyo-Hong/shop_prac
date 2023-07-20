@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { createContext, useState } from "react";
 import "./App.css";
 import { Container, Nav, Navbar, NavDropdown, Row, Col } from "react-bootstrap";
 import data from "./data";
@@ -9,8 +9,12 @@ import About from "./pages/About";
 import Event from "./pages/Event";
 import axios from "axios";
 
+// state 보관함 생성: createContext
+export const Context1 = createContext();
+
 function App() {
   const [shoes, setShoes] = useState(data);
+  const [stock] = useState([10, 11, 12]);
 
   return (
     <div className="App">
@@ -37,7 +41,16 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home shoes={shoes} setShoes={setShoes} />} />
-        <Route path="/detail/:id" element={<Detail shoes={shoes} />} />
+
+        <Route
+          path="/detail/:id"
+          element={
+            // context 공유: Provider, value에 공유할 state 입력
+            <Context1.Provider value={{ stock }}>
+              <Detail shoes={shoes} />
+            </Context1.Provider>
+          }
+        />
 
         {/* Nested Routes 작성 방식 */}
         <Route path="/about" element={<About />}>

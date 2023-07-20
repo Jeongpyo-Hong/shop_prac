@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Nav } from "react-bootstrap";
 import { useParams } from "react-router-dom";
+import { Context1 } from "./../App";
 
 const Detail = ({ shoes }) => {
   const { id } = useParams();
@@ -30,6 +31,7 @@ const Detail = ({ shoes }) => {
     };
   }, []);
 
+  // 페이지 로드 시 transition 적용
   const [fade, setFade] = useState("");
   useEffect(() => {
     setFade("end");
@@ -73,13 +75,17 @@ const Detail = ({ shoes }) => {
           <Nav.Link eventKey="link3">버튼2</Nav.Link>
         </Nav.Item>
       </Nav>
-      <Tab tab={tab} />
+      <Tab tab={tab} shoes={shoes} />
     </div>
   );
 };
 
 // if문은 html 안에서 사용할 수 없으므로 컴포넌트로 분리하여 사용
-const Tab = ({ tab }) => {
+const Tab = ({ tab, shoes }) => {
+  // useContext로 state 불러오기
+  const { stock } = useContext(Context1);
+  console.log("stock:", stock);
+
   // tab 누를 때 end 클래스 추가하기
   const [fade, setFade] = useState("");
   useEffect(() => {
@@ -105,7 +111,13 @@ const Tab = ({ tab }) => {
   // 방법2: array에서 하나씩 꺼내는 방식
   return (
     <div className={`start ${fade}`}>
-      {[<div>내용0</div>, <div>내용1</div>, <div>내용2</div>][tab]}
+      {
+        [
+          <div>{shoes[0].title}</div>,
+          <div>{shoes[1].title}</div>,
+          <div>{shoes[2].title}</div>,
+        ][tab]
+      }
     </div>
   );
 };

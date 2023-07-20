@@ -23,6 +23,17 @@ const Detail = ({ shoes }) => {
 
   const [tab, setTab] = useState(0);
 
+  // 상품 클릭 시 최근 본 목록에 추가
+  // 디테일페이지에 접속하면
+  // 그 페이지 상품의 id를 가져와서
+  // localstorage에 'watched' 항목에 추가하기
+  useEffect(() => {
+    const getWatched = JSON.parse(localStorage.getItem("watched"));
+    getWatched.unshift(+id);
+    const set = new Set(getWatched);
+    localStorage.setItem("watched", JSON.stringify([...set]));
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       // setShow(!show);

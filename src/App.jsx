@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import "./App.css";
 import { Container, Nav, Navbar, NavDropdown, Row, Col } from "react-bootstrap";
 import data from "./data";
@@ -77,6 +77,11 @@ function App() {
 const Home = ({ shoes, setShoes }) => {
   const [moreCnt, setMoreCnt] = useState(2);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    localStorage.getItem("watched") ||
+      localStorage.setItem("watched", JSON.stringify([]));
+  });
 
   return (
     <div>

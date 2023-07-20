@@ -2,8 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { Nav } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { Context1 } from "./../App";
+import { useDispatch } from "react-redux";
+import { orderItem } from "../store/cartSlice";
 
 const Detail = ({ shoes }) => {
+  const dispatch = useDispatch();
   const { id } = useParams();
   const item = shoes?.find((el) => el.id === +id);
 
@@ -59,7 +62,14 @@ const Detail = ({ shoes }) => {
           <h4 className="pt-5">{item.title}</h4>
           <p>{item.content}</p>
           <p>{item.price}원</p>
-          <button className="btn btn-danger">주문하기</button>
+          <button
+            className="btn btn-danger"
+            onClick={() =>
+              dispatch(orderItem({ id: item.id, name: item.title, count }))
+            }
+          >
+            주문하기
+          </button>
         </div>
       </div>
 
@@ -84,7 +94,6 @@ const Detail = ({ shoes }) => {
 const Tab = ({ tab, shoes }) => {
   // useContext로 state 불러오기
   const { stock } = useContext(Context1);
-  console.log("stock:", stock);
 
   // tab 누를 때 end 클래스 추가하기
   const [fade, setFade] = useState("");

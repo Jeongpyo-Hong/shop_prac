@@ -2,17 +2,19 @@ import { createContext, useState } from "react";
 import "./App.css";
 import { Container, Nav, Navbar, NavDropdown, Row, Col } from "react-bootstrap";
 import data from "./data";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Detail from "./pages/Detail";
 import Item from "./components/Item";
 import About from "./pages/About";
 import Event from "./pages/Event";
 import axios from "axios";
+import Cart from "./pages/Cart";
 
 // state 보관함 생성: createContext
 export const Context1 = createContext();
 
 function App() {
+  const nav = useNavigate();
   const [shoes, setShoes] = useState(data);
   const [stock] = useState([10, 11, 12]);
 
@@ -25,8 +27,8 @@ function App() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link href="#home">Home</Nav.Link>
-              <Nav.Link href="#link">Promotion</Nav.Link>
+              <Nav.Link onClick={() => nav("/")}>Home</Nav.Link>
+              <Nav.Link onClick={() => nav("/cart")}>cart</Nav.Link>
               <NavDropdown title="Category" id="basic-nav-dropdown">
                 <NavDropdown.Item href="#action/3.1">스니커즈</NavDropdown.Item>
                 <NavDropdown.Item href="#action/3.2">러닝화</NavDropdown.Item>
@@ -61,6 +63,9 @@ function App() {
           <Route path="one" element={<div>첫 주문 시 양배추즙 서비스</div>} />
           <Route path="two" element={<div>생일기념 폰 받기</div>} />
         </Route>
+
+        {/* cart */}
+        <Route path="/cart" element={<Cart />} />
 
         {/* 404페이지 */}
         <Route path="*" element={<div>없는 페이지</div>} />

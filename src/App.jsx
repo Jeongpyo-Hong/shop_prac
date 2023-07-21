@@ -1,14 +1,19 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
-import { Container, Nav, Navbar, NavDropdown, Row, Col } from "react-bootstrap";
+import { Container, Nav, Navbar, Row } from "react-bootstrap";
 import data from "./data";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import Detail from "./pages/Detail";
+import axios from "axios";
+import { useQuery } from "react-query";
+// import Detail from "./pages/Detail";
+// import Cart from "./pages/Cart";
 import Item from "./components/Item";
 import About from "./pages/About";
 import Event from "./pages/Event";
-import axios from "axios";
-import Cart from "./pages/Cart";
+
+// 홈 화면에서 로드할 필요가 없는 페이지는 lazy loading 처리(성능 개선을 위함)
+const Detail = lazy(() => import("./pages/Detail.jsx"));
+const Cart = lazy(() => import("./pages/Cart.jsx"));
 
 // state 보관함 생성: createContext
 export const Context1 = createContext();
@@ -18,58 +23,73 @@ function App() {
   const [shoes, setShoes] = useState(data);
   const [stock] = useState([10, 11, 12]);
 
+  const {
+    data: user,
+    loading,
+    error,
+  } = useQuery(
+    "user",
+    () =>
+      axios
+        .get("https://codingapple1.github.io/userdata.json")
+        .then((res) => res.data),
+    { staleTime: 2000 }
+  );
+
   return (
     <div className="App">
       {/* navbar */}
       <Navbar expand="lg" className="bg-body-tertiary">
         <Container>
           <Navbar.Brand href="#home">Shoemoa</Navbar.Brand>
+          {loading && <Nav className="ms-auto">로딩중</Nav>}
+          {error && <Nav className="ms-auto">에러</Nav>}
+          {user && <Nav className="ms-auto">반갑습니다. {user?.name}님</Nav>}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link onClick={() => nav("/")}>Home</Nav.Link>
               <Nav.Link onClick={() => nav("/cart")}>cart</Nav.Link>
-              <NavDropdown title="Category" id="basic-nav-dropdown">
-                <NavDropdown.Item href="#action/3.1">스니커즈</NavDropdown.Item>
-                <NavDropdown.Item href="#action/3.2">러닝화</NavDropdown.Item>
-                <NavDropdown.Item href="#action/3.3">구두</NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item href="#action/3.4">기타</NavDropdown.Item>
-              </NavDropdown>
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
-      <Routes>
-        <Route path="/" element={<Home shoes={shoes} setShoes={setShoes} />} />
+      {/* lazy loading 할 때 로딩화면 적용(fallback) */}
+      <Suspense fallback={<div>로딩중</div>}>
+        <Routes>
+          <Route
+            path="/"
+            element={<Home shoes={shoes} setShoes={setShoes} />}
+          />
 
-        <Route
-          path="/detail/:id"
-          element={
-            // context 공유: Provider, value에 공유할 state 입력
-            <Context1.Provider value={{ stock }}>
-              <Detail shoes={shoes} />
-            </Context1.Provider>
-          }
-        />
+          <Route
+            path="/detail/:id"
+            element={
+              // context 공유: Provider, value에 공유할 state 입력
+              <Context1.Provider value={{ stock }}>
+                <Detail shoes={shoes} />
+              </Context1.Provider>
+            }
+          />
 
-        {/* Nested Routes 작성 방식 */}
-        <Route path="/about" element={<About />}>
-          <Route path="member" element={<div>멤버이름</div>} />
-          <Route path="location" />
-        </Route>
-        <Route path="/event" element={<Event />}>
-          <Route path="one" element={<div>첫 주문 시 양배추즙 서비스</div>} />
-          <Route path="two" element={<div>생일기념 폰 받기</div>} />
-        </Route>
+          {/* Nested Routes 작성 방식 */}
+          <Route path="/about" element={<About />}>
+            <Route path="member" element={<div>멤버이름</div>} />
+            <Route path="location" />
+          </Route>
+          <Route path="/event" element={<Event />}>
+            <Route path="one" element={<div>첫 주문 시 양배추즙 서비스</div>} />
+            <Route path="two" element={<div>생일기념 폰 받기</div>} />
+          </Route>
 
-        {/* cart */}
-        <Route path="/cart" element={<Cart />} />
+          {/* cart */}
+          <Route path="/cart" element={<Cart />} />
 
-        {/* 404페이지 */}
-        <Route path="*" element={<div>없는 페이지</div>} />
-      </Routes>
+          {/* 404페이지 */}
+          <Route path="*" element={<div>없는 페이지</div>} />
+        </Routes>
+      </Suspense>
     </div>
   );
 }
@@ -77,16 +97,28 @@ function App() {
 const Home = ({ shoes, setShoes }) => {
   const [moreCnt, setMoreCnt] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [watched, setWatched] = useState(null);
 
   useEffect(() => {
-    localStorage.getItem("watched") ||
-      localStorage.setItem("watched", JSON.stringify([]));
-  });
+    const getWatched = JSON.parse(localStorage.getItem("watched"));
+    setWatched(getWatched);
+    getWatched || localStorage.setItem("watched", JSON.stringify([]));
+  }, []);
 
   return (
     <div>
       {/* main image */}
-      <div className="main-bg"></div>
+      <div className="main-bg">
+        {/* 최근 본 상품 */}
+        <ul className="watched">
+          <div>최근 본 상품</div>
+          {watched?.map((id) =>
+            shoes?.map(
+              (item) => item.id == id && <li key={item.id}>{item.title}</li>
+            )
+          )}
+        </ul>
+      </div>
 
       {/* goods list */}
       <Container style={{ textAlign: "center" }}>
